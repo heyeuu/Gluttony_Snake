@@ -14,6 +14,7 @@ public:
     Snake(std::vector<Position> initial_body);
 
     void set_direction(Direction direction);
+    void apply_direction();
     Position forward_head();
     Position head();
 
@@ -28,7 +29,7 @@ public:
     const std::vector<Position> &body() const;
 
 private:
-    Direction direction_;
+    Direction direction_, next_direction_;
 
     std::vector<Position> body_;
 };

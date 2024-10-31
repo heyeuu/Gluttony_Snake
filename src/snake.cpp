@@ -10,24 +10,24 @@ struct Position {
 };
 
 Snake::Snake(std::vector<Position> initial_body)
-    : direction_{Direction::UP}, body_{std::move(initial_body)} {
+    : direction_{Direction::UP},
+      next_direction_{Direction::UP}, body_{std::move(initial_body)} {
     // explicit
     // std::move
 }
 
-void Snake::set_direction(Direction direction) {
-    if (direction == Direction::UP && direction_ == Direction::DOWN)
+void Snake::set_direction(Direction direction) { next_direction_ = direction; }
+void Snake::apply_direction() {
+    if (next_direction_ == Direction::UP && direction_ == Direction::DOWN)
         return;
-    if (direction == Direction::DOWN && direction_ == Direction::UP)
+    if (next_direction_ == Direction::DOWN && direction_ == Direction::UP)
         return;
-    if (direction == Direction::LEFT && direction_ == Direction::RIGHT)
+    if (next_direction_ == Direction::LEFT && direction_ == Direction::RIGHT)
         return;
-    if (direction == Direction::RIGHT && direction_ == Direction::LEFT)
+    if (next_direction_ == Direction::RIGHT && direction_ == Direction::LEFT)
         return;
-
-    direction_ = direction;
+    direction_ = next_direction_;
 }
-
 Snake::Position Snake::forward_head() {
     constexpr Position direction_to_move[] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 

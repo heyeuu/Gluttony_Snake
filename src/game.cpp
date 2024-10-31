@@ -9,6 +9,8 @@
 #include <iostream>
 #include <iterator>
 #include <ratio>
+#include <stdexcept>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -19,9 +21,8 @@ Game::Game() : mode_opt_(0) {
     noecho();
     curs_set(0);
     keypad(stdscr, true);
-    timeout(300);
     napms(100);
-
+    timeout(1000);
     game_over_ = false;
 }
 
@@ -60,56 +61,63 @@ void Game::generate_food() {
 }
 
 void Game::parse_input() {
-    auto start_time = std::chrono::system_clock::now();
-    while (std::chrono::system_clock::now() - start_time <
-           std::chrono::milliseconds(300)) {
-        ;
+    auto start = std::chrono::steady_clock::now();
+    while (true) {
+        int time_left = 300 - std::chrono::round<std::chrono::milliseconds>(
+                                  std::chrono::steady_clock::now() - start)
+                                  .count();
+        if (time_left <= 0)
+            break;
+
+        timeout(time_left);
+        int input = getch();
+        if (input == ERR)
+            break;
+
+        switch (input) {
+
+        case KEY_UP:
+            snakes_.at(0).set_direction(Snake::Direction::UP);
+            break;
+        case KEY_DOWN:
+            snakes_.at(0).set_direction(Snake::Direction::DOWN);
+            break;
+        case KEY_LEFT:
+            snakes_.at(0).set_direction(Snake::Direction::LEFT);
+            break;
+        case KEY_RIGHT:
+            snakes_.at(0).set_direction(Snake::Direction::RIGHT);
+            break;
+
+        case 'w':
+            if (snakes_.size() == 2) {
+                snakes_.at(1).set_direction(Snake::Direction::UP);
+            }
+            break;
+
+        case 's':
+            if (snakes_.size() == 2) {
+                snakes_.at(1).set_direction(Snake::Direction::DOWN);
+            }
+            break;
+
+        case 'a':
+            if (snakes_.size() == 2) {
+                snakes_.at(1).set_direction(Snake::Direction::LEFT);
+            }
+            break;
+
+        case 'd':
+            if (snakes_.size() == 2) {
+                snakes_.at(1).set_direction(Snake::Direction::RIGHT);
+            }
+            break;
+
+        default:;
+        }
     }
-    int input = getch();
-    if (input == ERR)
-        return;
-
-    switch (input) {
-
-    case KEY_UP:
-        snakes_.at(0).set_direction(Snake::Direction::UP);
-        break;
-    case KEY_DOWN:
-        snakes_.at(0).set_direction(Snake::Direction::DOWN);
-        break;
-    case KEY_LEFT:
-        snakes_.at(0).set_direction(Snake::Direction::LEFT);
-        break;
-    case KEY_RIGHT:
-        snakes_.at(0).set_direction(Snake::Direction::RIGHT);
-        break;
-
-    case 'w':
-        if (snakes_.size() == 2) {
-            snakes_.at(1).set_direction(Snake::Direction::UP);
-        }
-        break;
-
-    case 's':
-        if (snakes_.size() == 2) {
-            snakes_.at(1).set_direction(Snake::Direction::DOWN);
-        }
-        break;
-
-    case 'a':
-        if (snakes_.size() == 2) {
-            snakes_.at(1).set_direction(Snake::Direction::LEFT);
-        }
-        break;
-
-    case 'd':
-        if (snakes_.size() == 2) {
-            snakes_.at(1).set_direction(Snake::Direction::RIGHT);
-        }
-        break;
-
-    default:;
-    }
+    for (size_t i = 0; i < snakes_.size(); i++)
+        snakes_[i].apply_direction();
 }
 
 void Game::step() {
@@ -309,9 +317,10 @@ void Game::start() {
     } else if (mode_opt_ == 1) {
 
         snakes_.emplace_back(
-            std::vector<Snake::Position>{{5, 5}, {6, 5}, {7, 5}});
-        snakes_.emplace_back(
             std::vector<Snake::Position>{{5, 7}, {6, 7}, {7, 7}});
+        snakes_.emplace_back(
+            std::vector<Snake::Position>{{5, 5}, {6, 5}, {7, 5}});
+
         style_opt.push_back(0);
         style_opt.push_back(1);
     }
