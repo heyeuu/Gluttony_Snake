@@ -1,8 +1,13 @@
 
 #include "snake.hpp"
+
 #include <cstddef>
 #include <exception>
+#include <functional>
+#include <iterator>
 #include <ncurses.h>
+#include <queue>
+#include <unordered_set>
 #include <vector>
 
 struct Position {
@@ -29,7 +34,8 @@ void Snake::apply_direction() {
     direction_ = next_direction_;
 }
 Snake::Position Snake::forward_head() {
-    constexpr Position direction_to_move[] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    // constexpr Position direction_to_move[] = {{-1, 0}, {1, 0}, {0, -1}, {0,
+    // 1}};
 
     // auto [offset_x, offset_y] =
     // direction_to_move[static_cast<int>(direction_)];
@@ -42,6 +48,7 @@ Snake::Position Snake::forward_head() {
 
     return new_head;
 }
+
 Snake::Position Snake::head() { return {body_[0].x, body_[0].y}; }
 
 bool Snake::in_self(Position position) const {
@@ -72,3 +79,18 @@ void Snake::render(int color) const {
 }
 
 const std::vector<Snake::Position> &Snake::body() const { return body_; }
+
+size_t Ai_snake::get_snake_size() { return get_body_size() + 1; }
+Ai_snake::Position Ai_snake::forward_head() {
+    auto head = Snake::head();
+    auto dir_x = a_star.path_.front().x - head.x;
+    auto dir_y = a_star.path_.front().y - head.y;
+    for (size_t i = 0; i < a_star.offset.size(); i++) {
+        if (dir_x == a_star.offset[i].dx && dir_y == a_star.offset[i].dy) {
+
+            Position new_head = {body_[0].x + dir_x, body_[0].y + dir_y};
+            body_.insert(body_.cbegin(), new_head);
+            return new_head;
+        }
+    }
+}

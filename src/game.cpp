@@ -1,3 +1,4 @@
+#pragma once
 #include "game.hpp"
 #include "snake.hpp"
 #include <chrono>
@@ -14,6 +15,70 @@
 #include <thread>
 #include <vector>
 
+// Map::Map() {
+//     for (int i = 0; i < 20; i++)
+//         for (int j = 0; j < 20; j++)
+//             obstacle_map[i][j] = false;
+//     for (int i = 0; i < 20; i++) {
+//         for (int j = 0; j < 0; j++) {
+//             snake_map[i][j] = 0;
+//         }
+//     }
+// }
+void Map::init_wall_map(void) {
+    for (int i = 0; i < 20; i++)
+        for (int j = 0; j < 20; j++)
+            if (i == 0 || i == 19 || j == 0 || j == 19) {
+                obstacle_map[i][j] = true;
+            } else {
+                obstacle_map[i][j] = false;
+            }
+}
+
+void Map::init_snake_map(Game game) {
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 0; j++) {
+            snake_map[i][j] = 0;
+        }
+    }
+    for (size_t i = 0; i < game.ai_snakes_.size(); i++) {
+        auto &ai_snake = game.ai_snakes_[i];
+        auto position = ai_snake.head();
+        snake_map[position.x][position.y] = ai_snake.get_snake_size();
+    }
+}
+void Map::set_snake_map() {
+    for (int i = 0; i < 20; i++)
+        for (int j = 0; j < 20; j++) {
+            if (snake_map[i][j] == 0)
+                continue;
+            snake_map[i][j]--;
+        }
+}
+
+/////加&?
+int A_star::set_node_h(Node &node, Position endpos) {
+    node.h = abs(node.pos.x - endpos.x) + abs(node.pos.y - endpos.y);
+    return node.h;
+}
+void A_star::set_node_g(Node &node) { node.g++; }
+int A_star::set_node_f(Node &node) {
+    node.f = node.g + node.h;
+    return node.f;
+}
+
+A_star::Node *
+A_star::creat_neighbor_node(Position endpos, delta offset, Node *par) {
+    Node *node = new Node();
+    set_node_g(*node);
+    set_node_h(*node, endpos);
+    set_node_f(*node);
+    node->pos.x = node->parent->pos.x + offset.dx;
+    node->pos.y = node->parent->pos.y + offset.dy;
+    node->parent = par;
+    return node;
+}
+
 Game::Game() : mode_opt_(0) {
     srand(std::time(0));
     initscr();
@@ -24,6 +89,9 @@ Game::Game() : mode_opt_(0) {
     napms(100);
     timeout(1000);
     game_over_ = false;
+    A_star a_star;
+    map.init_wall_map();
+    map.init_snake_map();
 }
 
 void Game::run() {
@@ -39,7 +107,7 @@ void Game::run() {
         }
 
         parse_input();
-
+        a_star.search();
         step();
     }
     // timer_thread.join();
@@ -56,6 +124,13 @@ void Game::generate_food() {
                 available = false;
                 break;
             }
+            if (mode_opt_ == 0) {
+                for (size_t i = 0; i < ai_snakes_.size(); i++) {
+                    ai_snakes_[i].in_self(food_);
+                    available = false;
+                    break;
+                }
+            }
         }
     } while (!available);
 }
@@ -63,12 +138,11 @@ void Game::generate_food() {
 void Game::parse_input() {
     auto start = std::chrono::steady_clock::now();
     while (true) {
-        int time_left = 300 - std::chrono::round<std::chrono::milliseconds>(
+        int time_left = 200 - std::chrono::round<std::chrono::milliseconds>(
                                   std::chrono::steady_clock::now() - start)
                                   .count();
         if (time_left <= 0)
             break;
-
         timeout(time_left);
         int input = getch();
         if (input == ERR)
@@ -121,6 +195,17 @@ void Game::parse_input() {
 }
 
 void Game::step() {
+    if (mode_opt_ == 0) {
+        for (size_t i = 0; i < ai_snakes_.size(); i++) {
+            auto &ai_snake = ai_snakes_[i];
+            auto position = ai_snake.forward_head();
+            if (position.x == food_.x && position.y == food_.y) {
+                generate_food();
+            } else {
+                ai_snake.forward_tail();
+            }
+        }
+    }
     for (size_t i = 0; i < snakes_.size(); i++) {
         auto &snake = snakes_[i];
         auto position = snake.forward_head();
@@ -158,6 +243,7 @@ void Game::step() {
             }
         }
     }
+
     refresh();
 }
 
@@ -189,6 +275,10 @@ void Game::render() {
         for (size_t i = 0; i < snakes_.size(); i++) {
             snakes_[i].render(2 + style_opt[i]);
         }
+
+        // for (size_t i = 0; i < passersby_snakes_.size(); i++) {
+        //     passersby_snakes_[i].render(1);
+        // }
 
         attron(COLOR_PAIR(6));
         mvaddch(food_.x, food_.y * 2, ' ');
@@ -314,6 +404,9 @@ void Game::start() {
         snakes_.emplace_back(
             std::vector<Snake::Position>{{5, 5}, {6, 5}, {7, 5}});
         style_opt.push_back(0);
+
+        ai_snakes_.emplace_back(
+            std::vector<Snake::Position>{{10, 10}, {11, 10}, {12, 10}});
     } else if (mode_opt_ == 1) {
 
         snakes_.emplace_back(
@@ -329,11 +422,43 @@ void Game::start() {
 
     collision_point_.clear();
 }
-// void Game::get_input() { input = getch(); }
 
-// void Game::mytimer() {
-//     while (keep_running_) {
-//         get_input();
-//         std::this_thread::sleep_for(std::chrono::milliseconds(interval_));
-//     }
-// }
+bool A_star::in_closed_list(Position pos) {
+    bool in_closed = false;
+    if (!closed_list_.empty()) {
+        for (size_t i = 0; i < closed_list_.size(); i++) {
+            if (pos.x == closed_list_[i].x && pos.y == closed_list_[i].y)
+                in_closed = true;
+            break;
+        }
+    }
+    return in_closed;
+}
+void A_star::search(Node current_node, Map map, Game game) {
+
+    open_list_.push(current_node);
+    while (current_node.pos.x != game.food_.x &&
+           current_node.pos.y != game.food_.y) {
+
+        for (int i = 0; i < 4; i++) {
+            Node *neighbor_node =
+                creat_neighbor_node((game.food_), offset[i], &current_node);
+            neighbor_nodes_.push_back(*neighbor_node);
+        }
+
+        for (size_t i = 0; i < neighbor_nodes_.size(); i++) {
+            if (!in_closed_list(neighbor_nodes_[i].pos) &&
+                map.obstacle_map[neighbor_nodes_[i].pos.x]
+                                [neighbor_nodes_[i].pos.y] == false &&
+                map.snake_map[neighbor_nodes_[i].pos.x]
+                             [neighbor_nodes_[i].pos.y] == 0)
+                open_list_.push(neighbor_nodes_[i]);
+        }
+        neighbor_nodes_.clear();
+
+        closed_list_.push_back(current_node.pos);
+        open_list_.pop();
+        current_node = open_list_.top();
+        path_.push(current_node.pos); // path_中不包含起始点
+    }
+}

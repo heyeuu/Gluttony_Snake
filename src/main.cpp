@@ -5,8 +5,6 @@
 #include <ncurses.h>
 #include <thread>
 
-#include "game.hpp"
-
 #include <cstdio>
 #include <ctime>
 
