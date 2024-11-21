@@ -1,0 +1,3 @@
+/home/linqinyang/Gluttony_Snake/build/CMakeFiles/snake.dir
+/home/linqinyang/Gluttony_Snake/build/CMakeFiles/edit_cache.dir
+/home/linqinyang/Gluttony_Snake/build/CMakeFiles/rebuild_cache.dir

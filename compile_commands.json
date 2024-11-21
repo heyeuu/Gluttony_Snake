@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/home/linqinyang/Gluttony_Snake/build",
+  "command": "/usr/bin/c++  -I/home/linqinyang/Gluttony_Snake/inc -O2 -Wall -Wextra -Wpedantic -std=gnu++20 -o CMakeFiles/snake.dir/src/main.cpp.o -c /home/linqinyang/Gluttony_Snake/src/main.cpp",
+  "file": "/home/linqinyang/Gluttony_Snake/src/main.cpp"
+},
+{
+  "directory": "/home/linqinyang/Gluttony_Snake/build",
+  "command": "/usr/bin/c++  -I/home/linqinyang/Gluttony_Snake/inc -O2 -Wall -Wextra -Wpedantic -std=gnu++20 -o CMakeFiles/snake.dir/src/snake.cpp.o -c /home/linqinyang/Gluttony_Snake/src/snake.cpp",
+  "file": "/home/linqinyang/Gluttony_Snake/src/snake.cpp"
+},
+{
+  "directory": "/home/linqinyang/Gluttony_Snake/build",
+  "command": "/usr/bin/c++  -I/home/linqinyang/Gluttony_Snake/inc -O2 -Wall -Wextra -Wpedantic -std=gnu++20 -o CMakeFiles/snake.dir/src/game.cpp.o -c /home/linqinyang/Gluttony_Snake/src/game.cpp",
+  "file": "/home/linqinyang/Gluttony_Snake/src/game.cpp"
+},
+{
+  "directory": "/home/linqinyang/Gluttony_Snake/build",
+  "command": "/usr/bin/c++  -I/home/linqinyang/Gluttony_Snake/inc -O2 -Wall -Wextra -Wpedantic -std=gnu++20 -o CMakeFiles/snake.dir/src/engine.cpp.o -c /home/linqinyang/Gluttony_Snake/src/engine.cpp",
+  "file": "/home/linqinyang/Gluttony_Snake/src/engine.cpp"
+},
+{
+  "directory": "/home/linqinyang/Gluttony_Snake/build",
+  "command": "/usr/bin/c++  -I/home/linqinyang/Gluttony_Snake/inc -O2 -Wall -Wextra -Wpedantic -std=gnu++20 -o CMakeFiles/snake.dir/src/node.cpp.o -c /home/linqinyang/Gluttony_Snake/src/node.cpp",
+  "file": "/home/linqinyang/Gluttony_Snake/src/node.cpp"
+},
+{
+  "directory": "/home/linqinyang/Gluttony_Snake/build",
+  "command": "/usr/bin/c++  -I/home/linqinyang/Gluttony_Snake/inc -O2 -Wall -Wextra -Wpedantic -std=gnu++20 -o CMakeFiles/snake.dir/src/a_star.cpp.o -c /home/linqinyang/Gluttony_Snake/src/a_star.cpp",
+  "file": "/home/linqinyang/Gluttony_Snake/src/a_star.cpp"
+}
+]
